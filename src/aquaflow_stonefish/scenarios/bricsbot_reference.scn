@@ -64,51 +64,51 @@
          Fixed startup colors: left green, right blue.  Edit color/specs here
          and restart the simulator to change color or brightness. -->
     <light name="led_left_1">
-      <specs radius="0.012" illuminance="10.0"/>
+      <specs radius="0.012" illuminance="50.0"/>
       <color rgb="0.05 1.0 0.10"/>
-      <origin xyz="-0.12 -0.195 -0.04" rpy="0 0 0"/>
+      <origin xyz="-0.12 -0.095 -0.04" rpy="0 0 0"/>
       <link name="base_link"/>
     </light>
     <light name="led_left_2">
-      <specs radius="0.012" illuminance="10.0"/>
+      <specs radius="0.012" illuminance="50.0"/>
       <color rgb="0.05 1.0 0.10"/>
-      <origin xyz="-0.04 -0.195 -0.04" rpy="0 0 0"/>
+      <origin xyz="-0.04 -0.095 -0.04" rpy="0 0 0"/>
       <link name="base_link"/>
     </light>
     <light name="led_left_3">
-      <specs radius="0.012" illuminance="10.0"/>
+      <specs radius="0.012" illuminance="50.0"/>
       <color rgb="0.05 1.0 0.10"/>
-      <origin xyz="0.04 -0.195 -0.04" rpy="0 0 0"/>
+      <origin xyz="0.04 -0.095 -0.04" rpy="0 0 0"/>
       <link name="base_link"/>
     </light>
     <light name="led_left_4">
-      <specs radius="0.012" illuminance="10.0"/>
+      <specs radius="0.012" illuminance="50.0"/>
       <color rgb="0.05 1.0 0.10"/>
-      <origin xyz="0.12 -0.195 -0.04" rpy="0 0 0"/>
+      <origin xyz="0.12 -0.095 -0.04" rpy="0 0 0"/>
       <link name="base_link"/>
     </light>
     <light name="led_right_1">
-      <specs radius="0.012" illuminance="10.0"/>
+      <specs radius="0.012" illuminance="50.0"/>
       <color rgb="0.05 0.30 1.0"/>
-      <origin xyz="-0.12 0.195 -0.04" rpy="0 0 0"/>
+      <origin xyz="-0.12 0.095 -0.04" rpy="0 0 0"/>
       <link name="base_link"/>
     </light>
     <light name="led_right_2">
-      <specs radius="0.012" illuminance="10.0"/>
+      <specs radius="0.012" illuminance="50.0"/>
       <color rgb="0.05 0.30 1.0"/>
-      <origin xyz="-0.04 0.195 -0.04" rpy="0 0 0"/>
+      <origin xyz="-0.04 0.095 -0.04" rpy="0 0 0"/>
       <link name="base_link"/>
     </light>
     <light name="led_right_3">
-      <specs radius="0.012" illuminance="10.0"/>
+      <specs radius="0.012" illuminance="50.0"/>
       <color rgb="0.05 0.30 1.0"/>
-      <origin xyz="0.04 0.195 -0.04" rpy="0 0 0"/>
+      <origin xyz="0.04 0.095 -0.04" rpy="0 0 0"/>
       <link name="base_link"/>
     </light>
     <light name="led_right_4">
-      <specs radius="0.012" illuminance="10.0"/>
+      <specs radius="0.012" illuminance="50.0"/>
       <color rgb="0.05 0.30 1.0"/>
-      <origin xyz="0.12 0.195 -0.04" rpy="0 0 0"/>
+      <origin xyz="0.12 0.095 -0.04" rpy="0 0 0"/>
       <link name="base_link"/>
     </light>
 

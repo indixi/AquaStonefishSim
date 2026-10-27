@@ -25,7 +25,7 @@ cascaded_pid_tracker:
     kp_z: 100.0
     ki_z: 0.0
     kd_z: 0.5
-    kp_yaw: 20
+    kp_yaw: 10
     ki_yaw: 0.0
     kd_yaw: 0.05
     integral_limit_xy: [1.0, 1.0]
