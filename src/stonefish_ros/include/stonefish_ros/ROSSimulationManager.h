@@ -51,6 +51,7 @@
 #include <stonefish_ros/Respawn.h>
 #include <image_transport/image_transport.h>
 #include "stonefish_ros/ROSControlInterface.h"
+#include <memory>
 
 namespace sf
 {
@@ -70,6 +71,7 @@ namespace sf
 	class Uniform;
 	class Jet;
 	class Comm;
+    class ROSLightController;
 
 	struct ROSRobot
 	{
@@ -103,6 +105,9 @@ namespace sf
 
 	    void AddROSRobot(ROSRobot* robot);
 	    bool RespawnROSRobot(const std::string& robotName, const Transform& origin);
+
+    ROSLightController& getLightController();
+    void ApplyLightStates();
 
 		virtual void SimulationStepCompleted(Scalar timeStep);
 	    virtual void ColorCameraImageReady(ColorCamera* cam);
@@ -149,6 +154,7 @@ namespace sf
 		std::map<std::string, std::pair<sensor_msgs::ImagePtr, sensor_msgs::ImagePtr>> sonarMsgPrototypes;
 		std::vector<ROSRobot*> rosRobots;
 		std::vector<ROSControlInterface*> controlIfs;
+    std::unique_ptr<ROSLightController> lightController;
 	};
 
 	//Callback functors

@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<launch>
+  <arg name="vehicle_name" default="bricsbot"/>
+  <arg name="show_panel" default="false"/>
+  <node pkg="aquaflow_stonefish" type="led_strip_controller.py"
+        name="led_strip_controller" output="screen">
+    <param name="vehicle_name" value="$(arg vehicle_name)"/>
+  </node>
+  <node if="$(arg show_panel)" pkg="rqt_reconfigure" type="rqt_reconfigure"
+        name="led_strip_panel" output="screen"/>
+</launch>

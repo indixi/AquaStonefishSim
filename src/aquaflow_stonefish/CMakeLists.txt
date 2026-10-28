@@ -8,6 +8,7 @@ project(aquaflow_stonefish)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
+  dynamic_reconfigure
   geometry_msgs
   nav_msgs
   roscpp
@@ -107,7 +108,10 @@ find_package(catkin REQUIRED COMPONENTS
 ## LIBRARIES: libraries you create in this project that dependent projects also need
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
+generate_dynamic_reconfigure_options(cfg/LedStrips.cfg)
+
 catkin_package(
+  CATKIN_DEPENDS dynamic_reconfigure
 #  INCLUDE_DIRS include
 #  LIBRARIES aquaflow_stonefish
 #  CATKIN_DEPENDS geometry_msgs nav_msgs roscpp rospy sensor_msgs std_msgs stonefish_ros
@@ -170,6 +174,7 @@ catkin_install_python(PROGRAMS
   scripts/actual_path_recorder.py
   scripts/blue8_thruster_allocator.py
   scripts/brics6_thruster_allocator.py
+  scripts/led_strip_controller.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
@@ -195,7 +200,7 @@ catkin_install_python(PROGRAMS
 # )
 
 ## Mark other files for installation (e.g. launch and bag files, etc.)
-install(DIRECTORY launch scenarios rviz data
+install(DIRECTORY launch scenarios rviz model
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
 )
 
@@ -211,3 +216,7 @@ install(DIRECTORY launch scenarios rviz data
 
 ## Add folders to be run by python nosetests
 # catkin_add_nosetests(test)
+
+if(CATKIN_ENABLE_TESTING)
+  catkin_add_nosetests(test)
+endif()

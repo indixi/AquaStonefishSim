@@ -3,9 +3,9 @@
 
 Usage (from aquaflow_stonefish):
   blender -b --python scripts/bake_bricsbot_texture.py -- \
-    data/bricsbot/bot_shark.obj \
-    data/bricsbot/bot_shark_stonefish_baked.obj \
-    data/bricsbot/bricsbot_baked.png 0.08 2048
+    model/robot/bricsbot/bot_shark.obj \
+    model/robot/bricsbot/bot_shark_stonefish_baked.obj \
+    model/robot/bricsbot/bricsbot_baked.png 0.08 2048
 
 The DAE materials are evaluated by Blender, baked into one atlas, and the
 exported OBJ has one material using that atlas.  This avoids relying on

@@ -26,6 +26,8 @@
 #include "stonefish_ros/ROSScenarioParser.h"
 #include "stonefish_ros/ROSSimulationManager.h"
 #include "stonefish_ros/ROSInterface.h"
+#include "stonefish_ros/ROSLightController.h"
+#include <cmath>
 
 #include <Stonefish/core/Robot.h>
 #include <Stonefish/entities/AnimatedEntity.h>
@@ -938,23 +940,45 @@ Comm* ROSScenarioParser::ParseComm(XMLElement* element, const std::string& nameP
 
 Light* ROSScenarioParser::ParseLight(XMLElement* element, const std::string& namePrefix)
 {
-    Light* l = ScenarioParser::ParseLight(element, namePrefix);
-    if(l != nullptr)
+    Light* light = ScenarioParser::ParseLight(element, namePrefix);
+    if(light == nullptr)
+        return nullptr;
+    auto* sim = static_cast<ROSSimulationManager*>(getSimulationManager());
+    XMLElement* subscriber = element->FirstChildElement("ros_subscriber");
+    const char* commandTopic = nullptr;
+    if(subscriber != nullptr &&
+       subscriber->QueryStringAttribute("command", &commandTopic) == XML_SUCCESS)
     {
-        ROSSimulationManager* sim = (ROSSimulationManager*)getSimulationManager();
-        ros::NodeHandle& nh = sim->getNodeHandle();
-        std::map<std::string, ros::Subscriber>& subs = sim->getSubscribers();
-        XMLElement* item;
-
-        //Online update of light origin frame
-        const char* originTopic = nullptr;
-        if((item = element->FirstChildElement("ros_subscriber")) != nullptr
-            && item->QueryStringAttribute("origin", &originTopic) == XML_SUCCESS)
+        Scalar maxPower;
+        Color color;
+        XMLElement* specs = element->FirstChildElement("specs");
+        XMLElement* colorElement = element->FirstChildElement("color");
+        if(specs == nullptr || specs->QueryAttribute("illuminance", &maxPower) != XML_SUCCESS ||
+           !std::isfinite(maxPower) || maxPower < 0 || colorElement == nullptr ||
+           !ParseColor(colorElement, color))
         {
-            subs[l->getName()] = nh.subscribe<geometry_msgs::Transform>(std::string(originTopic), 1, ActuatorOriginCallback(l));
+            ROS_ERROR_STREAM("Invalid initial state of light '" << light->getName() << "'");
+            delete light;
+            return nullptr;
+        }
+        LightStripState initial;
+        initial.rgb = {{color.rgb.x, color.rgb.y, color.rgb.z}};
+        if(!sim->getLightController().RegisterLight(light, commandTopic, maxPower, initial))
+        {
+            ROS_ERROR_STREAM("Cannot register controlled light '" << light->getName() << "'");
+            delete light;
+            return nullptr;
         }
     }
-    return l;
+    const char* originTopic = nullptr;
+    if(subscriber != nullptr &&
+       subscriber->QueryStringAttribute("origin", &originTopic) == XML_SUCCESS)
+    {
+        sim->getSubscribers()[light->getName()] =
+            sim->getNodeHandle().subscribe<geometry_msgs::Transform>(
+                std::string(originTopic), 1, ActuatorOriginCallback(light));
+    }
+    return light;
 }
 
 bool ROSScenarioParser::ParseContact(XMLElement* element)

@@ -31,6 +31,7 @@ add_message_files(
   BeaconInfo.msg
   Event.msg
   EventArray.msg
+  LightStripCommand.msg
 )
 
 add_service_files(
@@ -73,10 +74,17 @@ add_library(stonefish_ros SHARED
   src/ROSSimulationManager.cpp
   src/ROSScenarioParser.cpp
   src/ROSControlInterface.cpp
+  src/ROSLightController.cpp
 )
 target_link_libraries(stonefish_ros PUBLIC ${catkin_LIBRARIES} Stonefish::Stonefish)
 target_include_directories(stonefish_ros PUBLIC include ${catkin_INCLUDE_DIRS})
-add_dependencies(stonefish_ros ${${PROJECT_NAME}_EXPORTED_TARGETS})
+add_dependencies(stonefish_ros ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+
+if(CATKIN_ENABLE_TESTING)
+  add_executable(light_strip_state_test test/light_strip_state_test.cpp)
+  target_include_directories(light_strip_state_test PRIVATE include)
+  add_test(NAME light_strip_state_test COMMAND light_strip_state_test)
+endif()
 
 #Universal simulators with XML parser
 add_executable(parsed_simulator src/parsed_simulator.cpp)

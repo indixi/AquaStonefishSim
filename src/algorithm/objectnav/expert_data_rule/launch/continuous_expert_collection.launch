@@ -3,7 +3,7 @@
   <arg name="scenario_file"
        default="$(find aquaflow_stonefish)/scenarios/Rock_SeaUrchin.scn"/>
   <arg name="scene_id" default="rock_seaurchin"/>
-  <arg name="simulation_data" default="$(find aquaflow_stonefish)/data"/>
+  <arg name="simulation_data" default="$(find aquaflow_stonefish)/model"/>
   <arg name="simulation_rate" default="100.0"/>
   <arg name="graphics_resolution" default="1200 800"/>
   <arg name="graphics_quality" default="medium"/>

@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <scenario>
 	<looks>
-		<look name="br2" gray="1.0" roughness="0.4" metalness="0.5" texture="bluerov2/br2.png"/>
+		<look name="br2" gray="1.0" roughness="0.4" metalness="0.5" texture="robot/bluerov2/br2.png"/>
 		<look name="blue" rgb="0.0 0.5 1.0" roughness="0.3"/>
 	</looks>
 
@@ -12,12 +12,12 @@
 		<base_link name="base_link" type="compound" physics="submerged">
 			<external_part name="HullBottom" type="model" physics="submerged" buoyant="false">
 				<physical>
-					<mesh filename="bluerov2/bluerov2_phy.obj" scale="1"/>
+					<mesh filename="robot/bluerov2/bluerov2_phy.obj" scale="1"/>
 					<origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.0"/>
 					<thickness value="0.005"/>
 				</physical>
 				<visual>
-					<mesh filename="bluerov2/bluerov2.obj" scale="1"/>
+					<mesh filename="robot/bluerov2/bluerov2.obj" scale="1"/>
 					<origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.0"/>
 				</visual>
 				<material name="Fiberglass"/>
@@ -27,12 +27,12 @@
 
 			<external_part name="HeavyFit" type="model" physics="submerged" buoyant="false">
 				<physical>
-					<mesh filename="bluerov2/bluerov2_ring.obj" scale="1"/>
+					<mesh filename="robot/bluerov2/bluerov2_ring.obj" scale="1"/>
 					<origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.03"/>
 					<thickness value="0.005"/>
 				</physical>
 				<visual>
-					<mesh filename="bluerov2/bluerov2_wings.obj" scale="1"/>
+					<mesh filename="robot/bluerov2/bluerov2_wings.obj" scale="1"/>
 					<origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.0"/>
 				</visual>
 				<material name="Fiberglass"/>
@@ -146,7 +146,7 @@
 			<origin xyz="0.1355 0.1 0.0725" rpy="0 0 -0.7853981634"/>
 			<specs max_setpoint="376.991118" inverted_setpoint="true" normalized_setpoint="true"/>
 			<propeller diameter="0.076" right="true">
-				<mesh filename="bluerov2/ccw.obj" scale="1.0"/>
+				<mesh filename="robot/bluerov2/ccw.obj" scale="1.0"/>
 				<material name="Neutral"/>
 				<look name="blue"/>
 			</propeller>
@@ -165,7 +165,7 @@
 			<origin xyz="0.1355 -0.1 0.0725" rpy="0 0 0.7853981634"/>
 			<specs max_setpoint="376.991118" inverted_setpoint="true" normalized_setpoint="true"/>
 			<propeller diameter="0.076" right="true">
-				<mesh filename="bluerov2/ccw.obj" scale="1.0"/>
+				<mesh filename="robot/bluerov2/ccw.obj" scale="1.0"/>
 				<material name="Neutral"/>
 				<look name="blue"/>
 			</propeller>
@@ -184,7 +184,7 @@
 			<origin xyz="-0.1475 0.1 0.0725" rpy="0 0 -2.3561944902"/>
 			<specs max_setpoint="376.991118" inverted_setpoint="false" normalized_setpoint="true"/>
 			<propeller diameter="0.076" right="false">
-				<mesh filename="bluerov2/cw.obj" scale="1.0"/>
+				<mesh filename="robot/bluerov2/cw.obj" scale="1.0"/>
 				<material name="Neutral"/>
 				<look name="blue"/>
 			</propeller>
@@ -203,7 +203,7 @@
 			<origin xyz="-0.1475 -0.1 0.0725" rpy="0 0 2.3561944902"/>
 			<specs max_setpoint="376.991118" inverted_setpoint="false" normalized_setpoint="true"/>
 			<propeller diameter="0.076" right="false">
-				<mesh filename="bluerov2/cw.obj" scale="1.0"/>
+				<mesh filename="robot/bluerov2/cw.obj" scale="1.0"/>
 				<material name="Neutral"/>
 				<look name="blue"/>
 			</propeller>
@@ -222,7 +222,7 @@
 			<origin xyz="0.12 0.218 0.0" rpy="0 -1.5707963268 0"/>
 			<specs max_setpoint="376.991118" inverted_setpoint="false" normalized_setpoint="true"/>
 			<propeller diameter="0.076" right="true">
-				<mesh filename="bluerov2/cw.obj" scale="1.0"/>
+				<mesh filename="robot/bluerov2/cw.obj" scale="1.0"/>
 				<material name="Neutral"/>
 				<look name="blue"/>
 			</propeller>
@@ -241,7 +241,7 @@
 			<origin xyz="0.12 -0.218 0.0" rpy="0 -1.5707963268 0"/>
 			<specs max_setpoint="376.991118" inverted_setpoint="true" normalized_setpoint="true"/>
 			<propeller diameter="0.076" right="false">
-				<mesh filename="bluerov2/ccw.obj" scale="1.0"/>
+				<mesh filename="robot/bluerov2/ccw.obj" scale="1.0"/>
 				<material name="Neutral"/>
 				<look name="blue"/>
 			</propeller>
@@ -260,7 +260,7 @@
 			<origin xyz="-0.12 0.218 0.0" rpy="0 -1.5707963268 0"/>
 			<specs max_setpoint="376.991118" inverted_setpoint="true" normalized_setpoint="true"/>
 			<propeller diameter="0.076" right="false">
-				<mesh filename="bluerov2/ccw.obj" scale="1.0"/>
+				<mesh filename="robot/bluerov2/ccw.obj" scale="1.0"/>
 				<material name="Neutral"/>
 				<look name="blue"/>
 			</propeller>
@@ -279,7 +279,7 @@
 			<origin xyz="-0.12 -0.218 0.0" rpy="0 -1.5707963268 0"/>
 			<specs max_setpoint="376.991118" inverted_setpoint="false" normalized_setpoint="true"/>
 			<propeller diameter="0.076" right="true">
-				<mesh filename="bluerov2/cw.obj" scale="1.0"/>
+				<mesh filename="robot/bluerov2/cw.obj" scale="1.0"/>
 				<material name="Neutral"/>
 				<look name="blue"/>
 			</propeller>

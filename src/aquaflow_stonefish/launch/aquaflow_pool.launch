@@ -24,7 +24,7 @@
 
   <include file="$(find stonefish_ros)/launch/simulator.launch">
     <arg name="simulation_data"
-         value="$(find aquaflow_stonefish)/data"/>
+         value="$(find aquaflow_stonefish)/model"/>
     <arg name="scenario_description"
          value="$(find aquaflow_stonefish)/scenarios/$(arg scenario_file)"/>
     <arg name="simulation_rate" value="$(arg simulation_rate)"/>

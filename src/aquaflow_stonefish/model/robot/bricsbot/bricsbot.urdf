@@ -8,7 +8,7 @@
       <origin xyz="-0.0008 0.0 -0.0020"
               rpy="-1.5707963267948966 0 -1.5707963267948966"/>
       <geometry>
-        <mesh filename="package://aquaflow_stonefish/data/bricsbot/bot_shark_stonefish.obj" scale="1 1 1"/>
+        <mesh filename="package://aquaflow_stonefish/model/robot/bricsbot/bot_shark_stonefish.obj" scale="1 1 1"/>
       </geometry>
     </visual>
   </link>

@@ -1,7 +1,7 @@
 <launch>
   <include file="$(find stonefish_ros)/launch/simulator.launch">
     <arg name="simulation_data"
-         value="$(find aquaflow_stonefish)/data"/>
+         value="$(find aquaflow_stonefish)/model"/>
 
     <arg name="scenario_description"
          value="$(find aquaflow_stonefish)/scenarios/bluerov2_reference_tank.scn"/>

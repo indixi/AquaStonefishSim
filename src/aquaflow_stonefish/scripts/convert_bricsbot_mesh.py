@@ -4,7 +4,7 @@
 Run with Blender 4.x from the package root, for example:
 
   blender -b --python scripts/convert_bricsbot_mesh.py -- \
-    data/bricsbot/bot_shark.obj data/bricsbot/bot_shark_stonefish.obj 0.08
+    model/robot/bricsbot/bot_shark.obj model/robot/bricsbot/bot_shark_stonefish.obj 0.08
 
 Arguments are: INPUT_MESH OUTPUT_OBJ DECIMATE_RATIO [SCALE].  The default
 scale is 0.001 because the supplied Collada asset is in millimetres.  The

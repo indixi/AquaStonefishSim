@@ -28,6 +28,24 @@
 #include <Stonefish/utils/SystemUtil.hpp>
 #include "stonefish_ros/ROSSimulationManager.h"
 
+// Apply native Light::Switch and optional appearance setters on the render thread.
+class ROSGraphicalSimulationApp final : public sf::GraphicalSimulationApp
+{
+public:
+    ROSGraphicalSimulationApp(const std::string& name, const std::string& dataPath,
+                             sf::RenderSettings rendering, sf::HelperSettings helpers,
+                             sf::ROSSimulationManager* manager)
+        : sf::GraphicalSimulationApp(name, dataPath, rendering, helpers, manager),
+          manager(manager) {}
+    void ProcessInputs() override
+    {
+        sf::GraphicalSimulationApp::ProcessInputs();
+        manager->ApplyLightStates();
+    }
+private:
+    sf::ROSSimulationManager* manager;
+};
+
 int main(int argc, char **argv)
 {
 	ros::init(argc, argv, "parsed_simulator", ros::init_options::NoSigintHandler);
@@ -86,7 +104,7 @@ int main(int argc, char **argv)
     h.showForces = false;
 	
 	sf::ROSSimulationManager manager(rate, scenarioPath);
-    sf::GraphicalSimulationApp app("Stonefish Simulator", dataDirPath, s, h, &manager); 
+    ROSGraphicalSimulationApp app("Stonefish Simulator", dataDirPath, s, h, &manager);
 	app.Run();
 
 	return 0;

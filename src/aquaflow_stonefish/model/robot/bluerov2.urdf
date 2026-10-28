@@ -4,7 +4,7 @@
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
-        <mesh filename="package://aquaflow_stonefish/data/bluerov2/bluerov2.obj" scale="1.0 1.0 1.0"/>
+        <mesh filename="package://aquaflow_stonefish/model/robot/bluerov2/bluerov2.obj" scale="1.0 1.0 1.0"/>
       </geometry>
       <!-- <material name="Gray">
         <texture/>

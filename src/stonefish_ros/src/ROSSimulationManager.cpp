@@ -26,6 +26,7 @@
 #include "stonefish_ros/ROSSimulationManager.h"
 #include "stonefish_ros/ROSScenarioParser.h"
 #include "stonefish_ros/ROSInterface.h"
+#include "stonefish_ros/ROSLightController.h"
 #include "stonefish_ros/ThrusterState.h"
 
 #include <Stonefish/core/Robot.h>
@@ -75,10 +76,13 @@ namespace sf
 ROSSimulationManager::ROSSimulationManager(Scalar stepsPerSecond, std::string scenarioFilePath)
 	: SimulationManager(stepsPerSecond, Solver::SI, CollisionFilter::EXCLUSIVE), scnFilePath(scenarioFilePath), nh("~"), it(nh), spinner(4)
 {
+    lightController = std::make_unique<ROSLightController>(nh);
 }
 
 ROSSimulationManager::~ROSSimulationManager()
 {
+    spinner.stop();
+    lightController->Reset();
 }
 
 uint64_t ROSSimulationManager::getSimulationClock() const
@@ -141,11 +145,25 @@ std::vector<ROSControlInterface*>& ROSSimulationManager::getControlInterfaces()
     return controlIfs;
 }
 
+ROSLightController& ROSSimulationManager::getLightController()
+{
+    return *lightController;
+}
+
+void ROSSimulationManager::ApplyLightStates()
+{
+    lightController->ApplyOnRenderThread();
+}
+
 void ROSSimulationManager::BuildScenario()
 {
     //Run parser
     ROSScenarioParser parser(this);
     bool success = parser.Parse(scnFilePath);
+    // Failed parsing can delete lights that were already registered.
+    // Discard every cached pointer before callbacks/rendering are started.
+    if(!success)
+        lightController->Reset();
 
     //Save log
     std::string logFilePath = ros::file_log::getLogDirectory() + "/stonefish_ros_parser.log";
@@ -170,6 +188,7 @@ void ROSSimulationManager::BuildScenario()
 void ROSSimulationManager::DestroyScenario()
 {
     spinner.stop();
+    lightController->Reset();
 
     //Destroy ROS components
     for(auto it = srvs.begin(); it != srvs.end(); ++it)
@@ -219,6 +238,7 @@ bool ROSSimulationManager::RespawnROSRobot(const std::string& robotName, const T
 
 void ROSSimulationManager::SimulationStepCompleted(Scalar timeStep)
 {
+    lightController->Advance(timeStep);
 	////////////////////////////////////////SENSORS//////////////////////////////////////////////
     unsigned int id = 0;
     Sensor* sensor;

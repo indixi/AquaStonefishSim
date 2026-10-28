@@ -50,7 +50,7 @@
 
 	<static name="Seabed" type="model">
 		<physical>
-			<mesh filename="flat.obj" scale="1.0"/>
+			<mesh filename="scn/flat.obj" scale="1.0"/>
 			<origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.0"/>
 		</physical>
 		<material name="Rock"/>
