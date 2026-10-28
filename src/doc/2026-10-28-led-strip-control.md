@@ -2,14 +2,14 @@
 
 ## 本次范围与能力边界
 
-本次修改 ROS 工程，**没有修改、下载替换或安装 Stonefish 引擎源码**。保留用户当前的八个原生灯珠、位置、半径、颜色及每灯 `illuminance=100.0`；模型资源按用户新目录组织。未改 PID、推力分配算法、质量或浮力配置。
+首次实施仅修改 ROS 工程；本轮已根据用户后续授权补齐 `third_party/stonefish` 引擎源码。引擎编译修复、安装步骤和验证边界见 [引擎补丁实施说明](2026-10-28-stonefish-led-engine-implementation.md)。保留用户当前的八个原生灯珠、位置、半径、颜色及每灯 `illuminance=100.0`；模型资源按用户新目录组织。未改 PID、推力分配算法、质量或浮力配置。
 
 | 环境 | 开关/常亮/闪烁 | RGB 变化 | 非零亮度比例 |
 |---|---|---|---|
-| 原版 Stonefish 1.6 | 接入原生 `Light::Switch(bool)` | 保持 SCN 初始颜色 | 保持 SCN 初始发光量；比例为 0 可关闭 |
+| 无外观扩展的开关后端（需要可访问的 ParseColor） | 接入原生 `Light::Switch(bool)` | 保持 SCN 初始颜色 | 保持 SCN 初始发光量；比例为 0 可关闭 |
 | 完成本文件约定的引擎补丁，并重编 ROS | 支持 | 支持 | 支持 |
 
-“原版可闪烁”指接口和调度已经接通；当前编辑电脑不是 ROS/Stonefish 运行环境，仍须在仿真电脑上完成本文的画面验收。面板上 RGB 和亮度字段可操作，并不表示未打补丁的库已经支持它们。原版后端启动时会输出能力警告，并发布锁存的能力标志。
+当前 ROS 解析器需要受保护的 ParseColor；完全未打补丁的官方头文件会出现 private 访问编译错误，本轮已在引擎修正，需先安装新头文件和库。“开关后端可闪烁”指接口和调度已经接通；当前编辑电脑不是 ROS/Stonefish 运行环境，仍须在仿真电脑上完成本文的画面验收。面板上 RGB 和亮度字段可操作，并不表示未打补丁的库已经支持它们。原版后端启动时会输出能力警告，并发布锁存的能力标志。
 
 ## 工作区决定与实施记录
 
@@ -117,7 +117,7 @@ catkin_make
 source devel/setup.bash
 ```
 
-使用原版 Stonefish 时也可以构建；此时调色与非零亮度比例不会生效，日志会说明原因。ROS 消息及 Python cfg 都是编译生成，直接运行脚本而不先构建会缺少这些模块。
+本轮请先按引擎补丁实施说明构建并安装补丁版 Stonefish，再构建 ROS；不能继续使用 ParseColor 为 private 的旧安装头文件。ROS 消息及 Python cfg 都是编译生成，直接运行脚本而不先构建会缺少这些模块。
 
 启动仿真并显示控制面板：
 
@@ -135,101 +135,13 @@ roslaunch aquaflow_stonefish led_strips.launch show_panel:=true
 
 此时主启动命令应加 `start_led_controller:=false`，保证只有一个锁存控制节点。面板选择 `/led_strip_controller`，分别设置左右 mode、RGB、brightness、blink_hz、duty_cycle。当前发布节点在参数变更时发布完整左右配置，不高频发送亮灭消息。
 
-## Stonefish 引擎后续需要的补丁（本次未应用）
+## Stonefish 引擎补丁（已实现，需构建安装）
 
-以下是给引擎维护者的接口与实现要求。应核对目标机实际使用的 Stonefish 1.6 源码版本；先修改源码，再构建安装库，不能只改安装目录中的头文件。
+已在外层 `third_party/stonefish` 实施动态 RGB/光通量接口、灯珠活动索引修复、聚光灯阴影范围更新，并将 `ScenarioParser::ParseColor` 从 private 调整至 protected，修复 ROS 派生解析器的访问错误。
 
-### 1. Library/include/actuators/Light.h
+具体文件、测试和与你的 `catkin build` 工作空间匹配的命令见 [Stonefish 引擎补丁与编译修复](2026-10-28-stonefish-led-engine-implementation.md)。必须先安装头文件和库，再重新构建 ROS；仅修改仓库源码不会覆盖报错中的 `/usr/local/include/Stonefish`。
 
-在 public 增加 ROS 兼容层检测的精确接口：
-
-```cpp
-void setLightProperties(const Color& color, Scalar luminousPower, bool enabled);
-```
-
-在 private 增加构造时光通量到渲染光强的换算系数，例如：
-
-```cpp
-GLfloat powerToIntensity = 0.f;
-```
-
-本工程约定从渲染线程调用该 setter。不要在 ROS 回调线程直接调用，也不要在该函数中重新创建光源、网格或 GPU 对象。
-
-### 2. Library/include/graphics/OpenGLLight.h 与 src/graphics/OpenGLLight.cpp
-
-增加更新现有光源颜色与已换算强度的方法：
-
-```cpp
-// Called on the rendering thread. intensity is the value stored in colorLi.w.
-void setColorIntensity(glm::vec3 rgb, GLfloat intensity);
-```
-
-实现核心为对现有 colorLi 赋值，例如：
-
-```cpp
-void OpenGLLight::setColorIntensity(glm::vec3 rgb, GLfloat intensity)
-{
-    colorLi = glm::vec4(rgb, glm::max(0.f, intensity));
-}
-```
-
-正式补丁应校验非有限值，并约束 RGB 范围；本 ROS 入口已有同样的指令校验。这一入口保持既有着色器从 colorLi 读取颜色和强度的方式。
-
-### 3. Library/src/actuators/Light.cpp
-
-修改 `InitGraphics()`：使用“单位光通量”创建对应点光源/聚光灯，读取构造函数已有的换算结果并保存为固定系数，再恢复 SCN 的实际发光量。
-
-原本传入最后一个参数 Fi 的两个构造调用，改为传入 1.0f；创建成功后增加：
-
-```cpp
-powerToIntensity = glLight->getColorLi().w;
-glLight->setColorIntensity(c.rgb, powerToIntensity * static_cast<GLfloat>(Fi));
-```
-
-保留原来的位置更新、开启光源、注册光源等初始化步骤。此方案复用点光源和聚光灯自身的光强归一化公式，不需要在 ROS 代码中重复写各自的公式。
-
-新增 setter 的核心逻辑：
-
-```cpp
-void Light::setLightProperties(const Color& color, Scalar luminousPower, bool enabled)
-{
-    // Validate finite RGB/power before assigning; reject invalid values.
-    c = color;
-    Fi = btMax(Scalar(0), luminousPower);
-    if(glLight != nullptr)
-    {
-        glLight->setColorIntensity(c.rgb, powerToIntensity * static_cast<GLfloat>(Fi));
-        Switch(enabled && Fi > Scalar(0));
-    }
-}
-```
-
-代码块展示核心流程，正式补丁需要加入前述输入校验。使用固定换算系数很重要：**不能拿旧 Fi 作分母计算比例，也不能反复乘旧亮度**，否则发光量为零之后可能无法恢复，或连续拖动滑块导致亮度不断衰减。
-
-### 4. 分组开关的绘制索引检查
-
-目标机若沿用官方源码中“SetupLights 跳过关闭灯光、DrawLightSource 使用原始 lightId”这套实现，还需要检查 `Library/src/graphics/OpenGLContent.cpp` 的光源索引：
-
-- 光照 UBO 只含开启的点光源/聚光灯，索引是压缩后的索引。
-- DrawLightSource 对开启灯珠设置 lightId 时，应分别计数前面开启的同类型光源。
-- 不能在关闭左组后，继续用右组的原始数组下标去索引压缩后的 UBO。
-
-因此验收必须包含“左灭右亮”和“左右不同步闪烁”。根据目标版本是否已修复该问题决定是否需要此项补丁；本次没有修改任何引擎文件。
-
-### 5. 补丁后的构建顺序
-
-```bash
-# STONEFISH_SRC 指向目标机实际的引擎源码目录。
-cmake -S "$STONEFISH_SRC" -B "$STONEFISH_SRC/build-led" -DCMAKE_BUILD_TYPE=Release
-cmake --build "$STONEFISH_SRC/build-led" -j2
-sudo cmake --install "$STONEFISH_SRC/build-led"
-sudo ldconfig
-# 回到包含 src/ 的 ROS 工作空间根目录。
-catkin_make --force-cmake
-source devel/setup.bash
-```
-
-重新启动仿真后，能力话题应为 true；再验证 RGB 与亮度实际画面。分发到另一台电脑时，除 ROS 工程外，还要同步引擎补丁、头文件和库的构建版本。
+本轮没有改动 ROS 灯带协议、调参面板、灯珠坐标或控制算法。
 
 ## 验证方式与验收清单
 
