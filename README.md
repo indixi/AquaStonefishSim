@@ -220,8 +220,7 @@ git submodule update --init --recursive
 
 ## 详细文档
 
-- [灯带控制、消息接口与资源目录迁移](src/doc/2026-10-28-led-strip-control.md)
-- [Stonefish 引擎补丁、编译安装及验证记录](src/doc/2026-10-28-stonefish-led-engine-implementation.md)
+- [灯带整体架构、ROS/引擎源码改动与运行指南](src/doc/2026-10-28-led-strip-control.md)
 - [数据采集](src/algorithm/objectnav/data_generate/README.md)
 - [规则专家策略](src/algorithm/objectnav/expert_data_rule/README.md)
 - [目标导航与训练入口](src/algorithm/objectnav/ObjectNav/README.md)
