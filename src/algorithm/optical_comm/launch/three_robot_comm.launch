@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<launch>
+  <arg name="graphics_quality" default="medium"/>
+  <arg name="graphics_resolution" default="1200 800"/>
+  <arg name="start_demo_providers" default="true"/>
+  <include file="$(find stonefish_ros)/launch/simulator.launch">
+    <arg name="simulation_data" value="$(find aquaflow_stonefish)/model"/>
+    <arg name="scenario_description" value="$(find aquaflow_stonefish)/scenarios/three_robot_optical_comm.scn"/>
+    <arg name="simulation_rate" value="100"/>
+    <arg name="graphics_quality" value="$(arg graphics_quality)"/>
+    <arg name="graphics_resolution" value="$(arg graphics_resolution)"/>
+  </include>
+  <include file="$(find optical_comm)/launch/robot_comm.launch">
+    <arg name="vehicle_name" value="leader"/><arg name="node_id" value="1"/><arg name="role" value="leader"/>
+  </include>
+  <include file="$(find optical_comm)/launch/robot_comm.launch">
+    <arg name="vehicle_name" value="follower_1"/><arg name="node_id" value="2"/><arg name="role" value="follower"/>
+  </include>
+  <include file="$(find optical_comm)/launch/robot_comm.launch">
+    <arg name="vehicle_name" value="follower_2"/><arg name="node_id" value="3"/><arg name="role" value="follower"/>
+  </include>
+  <group if="$(arg start_demo_providers)">
+    <node pkg="optical_comm" type="communication_demo.py" name="follower_1_business"
+          args="--role follower --vehicle follower_1 --reply 1010101010" output="screen"/>
+    <node pkg="optical_comm" type="communication_demo.py" name="follower_2_business"
+          args="--role follower --vehicle follower_2 --reply 0011001100" output="screen"/>
+  </group>
+</launch>

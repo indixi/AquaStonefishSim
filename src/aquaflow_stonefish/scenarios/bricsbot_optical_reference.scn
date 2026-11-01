@@ -1,0 +1,90 @@
+<?xml version="1.0"?>
+<!-- Static optical-communication variant; source tracking model remains unchanged. -->
+<scenario>
+  <looks>
+    <look name="$(arg vehicle_name)_body" gray="1.0" texture="robot/bricsbot/bricsbot.png" roughness="0.45" metalness="0.15" />
+    <look name="$(arg vehicle_name)_dark" rgb="0.08 0.10 0.12" roughness="0.55" metalness="0.25" />
+  </looks>
+  <robot name="$(arg vehicle_name)" fixed="true" self_collisions="false">
+    <base_link name="base_link" type="compound" physics="submerged">
+      <external_part name="BricsBotHull" type="model" physics="submerged" buoyant="false">
+        <physical>
+          <mesh filename="robot/bricsbot/bricsbot_stonefish_physical_proxy_5000_no_top_bump_pre_refined_no_normals.obj" scale="1.0" />
+          <origin xyz="0 0 0" rpy="-1.5707963267948966 0 0" />
+          <thickness value="0.004" />
+        </physical>
+        <visual>
+          <mesh filename="robot/bricsbot/bricsbot_stonefish_baked.obj" scale="1.0" />
+          <origin xyz="-0.0008 0.0 -0.0020" rpy="-1.5707963267948966 0 0" />
+        </visual>
+        <material name="Fiberglass" />
+        <look name="$(arg vehicle_name)_body" />
+        <mass value="0.50" />
+        <compound_transform xyz="0 0 0" rpy="0 0 0" />
+      </external_part>
+    </base_link>
+    <light name="led_left_1">
+      <specs radius="0.012" illuminance="100.0" />
+      <color rgb="0.02 0.25 1.0" />
+      <origin xyz="0.225 -0.050 -0.08" rpy="0 0 0" />
+      <link name="base_link" />
+      <ros_subscriber command="/$(arg vehicle_name)/lights/left/cmd" />
+    </light>
+    <light name="led_left_2">
+      <specs radius="0.012" illuminance="100.0" />
+      <color rgb="0.02 0.25 1.0" />
+      <origin xyz="0.225 -0.090 -0.08" rpy="0 0 0" />
+      <link name="base_link" />
+      <ros_subscriber command="/$(arg vehicle_name)/lights/left/cmd" />
+    </light>
+    <light name="led_left_3">
+      <specs radius="0.012" illuminance="100.0" />
+      <color rgb="0.02 0.25 1.0" />
+      <origin xyz="0.225 -0.130 -0.08" rpy="0 0 0" />
+      <link name="base_link" />
+      <ros_subscriber command="/$(arg vehicle_name)/lights/left/cmd" />
+    </light>
+    <light name="led_left_4">
+      <specs radius="0.012" illuminance="100.0" />
+      <color rgb="0.02 0.25 1.0" />
+      <origin xyz="0.225 -0.170 -0.08" rpy="0 0 0" />
+      <link name="base_link" />
+      <ros_subscriber command="/$(arg vehicle_name)/lights/left/cmd" />
+    </light>
+    <light name="led_right_1">
+      <specs radius="0.012" illuminance="100.0" />
+      <color rgb="0.02 0.25 1.0" />
+      <origin xyz="0.225 0.050 -0.08" rpy="0 0 0" />
+      <link name="base_link" />
+      <ros_subscriber command="/$(arg vehicle_name)/lights/right/cmd" />
+    </light>
+    <light name="led_right_2">
+      <specs radius="0.012" illuminance="100.0" />
+      <color rgb="0.02 0.25 1.0" />
+      <origin xyz="0.225 0.090 -0.08" rpy="0 0 0" />
+      <link name="base_link" />
+      <ros_subscriber command="/$(arg vehicle_name)/lights/right/cmd" />
+    </light>
+    <light name="led_right_3">
+      <specs radius="0.012" illuminance="100.0" />
+      <color rgb="0.02 0.25 1.0" />
+      <origin xyz="0.225 0.130 -0.08" rpy="0 0 0" />
+      <link name="base_link" />
+      <ros_subscriber command="/$(arg vehicle_name)/lights/right/cmd" />
+    </light>
+    <light name="led_right_4">
+      <specs radius="0.012" illuminance="100.0" />
+      <color rgb="0.02 0.25 1.0" />
+      <origin xyz="0.225 0.170 -0.08" rpy="0 0 0" />
+      <link name="base_link" />
+      <ros_subscriber command="/$(arg vehicle_name)/lights/right/cmd" />
+    </light>
+    <sensor name="rgb_camera" rate="15.0" type="camera">
+      <specs resolution_x="640" resolution_y="480" horizontal_fov="70.0" />
+      <origin xyz="0.20 0.0 -0.02" rpy="1.5707963268 0.0 1.5707963268" />
+      <link name="base_link" />
+      <ros_publisher topic="/$(arg vehicle_name)/rgb" />
+    </sensor>
+    <world_transform xyz="$(arg position)" rpy="$(arg orientation)" />
+  </robot>
+</scenario>

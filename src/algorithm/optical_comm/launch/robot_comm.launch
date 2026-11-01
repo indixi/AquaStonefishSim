@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<launch>
+  <arg name="vehicle_name"/>
+  <arg name="node_id"/>
+  <arg name="role"/>
+  <node pkg="optical_comm" type="optical_comm_node.py" ns="$(arg vehicle_name)"
+        name="optical_comm" output="screen">
+    <rosparam command="load" file="$(find optical_comm)/config/robots.yaml"/>
+    <rosparam command="load" file="$(find optical_comm)/config/symbols.yaml"/>
+    <rosparam command="load" file="$(find optical_comm)/config/timing.yaml"/>
+    <rosparam command="load" file="$(find optical_comm)/config/protocol.yaml"/>
+    <rosparam command="load" file="$(find optical_comm)/config/vision.yaml"/>
+    <param name="vehicle_name" value="$(arg vehicle_name)"/>
+    <param name="node_id" value="$(arg node_id)"/>
+    <param name="role" value="$(arg role)"/>
+  </node>
+</launch>

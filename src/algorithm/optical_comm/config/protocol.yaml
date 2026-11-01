@@ -1,0 +1,9 @@
+protocol:
+  # Zero asks the ROS adapter to derive a safe bound from T and frame lengths.
+  ack_timeout: 0
+  read_timeout: 0
+  app_timeout: 15.0
+  max_retries: 2
+  session_timeout: 300.0
+  closed_cache_time: 300.0
+  max_payload_bits: 256

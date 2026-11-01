@@ -1,0 +1,11 @@
+timing:
+  period: 0.4
+  guard_symbols: 2
+  min_samples: 2
+  vote_fraction: 0.65
+  edge_margin: 0.2
+  confidence: 0.6
+# Extra quiet time after a received frame, including the remote trailing guard.
+turnaround_symbols: 3
+tick_hz: 50.0
+startup_settle: 3.0

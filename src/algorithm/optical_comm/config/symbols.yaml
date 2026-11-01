@@ -1,0 +1,6 @@
+codec: blue_green_2bit
+symbols:
+  BLUE_HIGH: {rgb: [0.02, 0.25, 1.0], brightness: 1.0}
+  BLUE_LOW: {rgb: [0.02, 0.25, 1.0], brightness: 0.05}
+  GREEN_HIGH: {rgb: [0.02, 1.0, 0.08], brightness: 1.0}
+  GREEN_LOW: {rgb: [0.02, 1.0, 0.08], brightness: 0.05}

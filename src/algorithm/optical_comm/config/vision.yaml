@@ -1,0 +1,10 @@
+vision:
+  background_frames: 8
+  min_pixels: 8
+  minimum_change: 15
+  minimum_value: 40
+  high_threshold: 170
+  threshold_margin: 8
+  color_ratio: 1.3
+  minimum_saturation: 0.35
+  dominance: 0.7

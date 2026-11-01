@@ -60,6 +60,7 @@ AquaStonefishSim/
 │   ├── stonefish_ros/               # Stonefish ROS 接口
 │   ├── robot_control/               # 参考指令、级联 PID 和动作执行
 │   ├── algorithm/objectnav/         # 数据采集、专家策略和目标导航
+│   ├── algorithm/optical_comm/      # 主从式可见光通信
 │   └── doc/                         # 工程改动、构建和使用记录
 └── third_party/
     └── stonefish/                   # Stonefish 引擎子模块
@@ -148,6 +149,31 @@ rostopic echo -n 1 /bricsbot/lights/right/cmd/appearance_supported
 ```
 
 补丁版引擎与 ROS 包匹配构建后，预期为 `data: True`。
+
+## 可见光通信（第一版）
+
+通信包位于 `src/algorithm/optical_comm`。使用一个 Leader 和两个 Follower 的静态场景，Leader 统一寻址和调度，通过实际 RGB 图像接收蓝/绿两档亮度符号，支持会话内读写、校验、确认、重试和 END 后切换对象。
+
+在已安装补丁版引擎、加载 ROS 环境的 catkin 工作空间根目录构建：
+
+```bash
+catkin build optical_comm --force-cmake --cmake-args \
+  -DStonefish_DIR=/usr/local/lib/cmake/Stonefish
+source devel/setup.bash
+export LD_LIBRARY_PATH="/usr/local/lib:${LD_LIBRARY_PATH:-}"
+roslaunch optical_comm three_robot_comm.launch
+```
+
+另开终端加载同一工作空间，运行 Leader 示例：
+
+```bash
+rosrun optical_comm communication_demo.py \
+  --role leader --vehicle leader --peers 2,3 --payload 00011011
+```
+
+场景默认启动两个 Follower 的示例数据提供器；接入实际业务时使用 `start_demo_providers:=false`。接收阈值需要在目标仿真电脑核对，当前已完成软件逻辑和测试图像验证，尚未在本地 Windows 执行实际 Stonefish 图形通信验收。
+
+架构、协议、配置、事件和后续改动统一维护在 [可见光通信文档](src/doc/optical_communication.md)。
 
 ## 其他基本指令
 
