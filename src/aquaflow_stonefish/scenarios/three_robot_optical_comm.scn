@@ -73,19 +73,19 @@
   <include file="$(find aquaflow_stonefish)/scenarios/bricsbot_optical_reference.scn">
     <arg name="led_illuminance" value="$(param /optical_comm/led_illuminance)" />
     <arg name="vehicle_name" value="leader" />
-    <arg name="position" value="-1.2 0 1.5" />
+    <arg name="position" value="-0.5 0 1.5" />
     <arg name="orientation" value="0 0 0" />
   </include>
   <include file="$(find aquaflow_stonefish)/scenarios/bricsbot_optical_reference.scn">
     <arg name="led_illuminance" value="$(param /optical_comm/led_illuminance)" />
     <arg name="vehicle_name" value="follower_1" />
-    <arg name="position" value="1.0 -0.6 1.5" />
+    <arg name="position" value="0.5 -0.25 1.5" />
     <arg name="orientation" value="0 0 3.141592653589793" />
   </include>
   <include file="$(find aquaflow_stonefish)/scenarios/bricsbot_optical_reference.scn">
     <arg name="led_illuminance" value="$(param /optical_comm/led_illuminance)" />
     <arg name="vehicle_name" value="follower_2" />
-    <arg name="position" value="1.0 0.6 1.5" />
+    <arg name="position" value="0.5 0.25 1.5" />
     <arg name="orientation" value="0 0 3.141592653589793" />
   </include>
 </scenario>

@@ -136,7 +136,7 @@ Leader                         被寻址的 Follower
 
 ## 三机器人场景
 
-- leader：(-1.2,0,1.5)，面向 +X；follower_1、follower_2：(1,-0.6,1.5)、(1,0.6,1.5)，面向 -X。
+- leader：(-0.5,0,1.5)，面向 +X；follower_1、follower_2：(0.5,-0.25,1.5)、(0.5,0.25,1.5)，面向 -X。2026-11-02 缩短通信距离：Leader 到每台 Follower 的中心距离约 1.03 米（原约 2.28 米），两个 Follower 中心间距 0.50 米。
 - 模板 fixed=true，不启动运动控制。仅保留本轮需要的 RGB 和灯带，复用现有网格。
 - 通信场景的八颗灯珠与单机器人 `bricsbot_reference.scn` 使用相同坐标：x=-0.12、-0.04、0.04、0.12，左右 y=±0.02，z=-0.04，半径 0.012。2026-11-02 按用户要求恢复左右两排布局，取消此前机头前方的布局。是否被机体遮挡，必须从接收机器人的 RGB 图像确认。
 - 三台共 24 个原生点光源，各自独立名称与外观名称，避免重复注册。
@@ -338,3 +338,9 @@ rostopic echo /leader/optical_comm/observation
 5. Follower 出现 RX_REJECTED 时，查看 detail；unreliable symbol window 表示符号采样不足或不稳定，CRC 错误则表示解码后的帧校验失败。也可用 `rostopic hz /follower_1/rgb/image_color` 检查相机实际帧率：T=0.4 秒的中央采样窗口只有 0.24 秒，需要至少两帧，标称 15 Hz 不等于实际始终达到 15 Hz。
 
 本地只能检查配置、资源和软件测试；OPEN 超时是否解除，仍需目标 Linux 机器人的 RGB 图像与上述事件验证。
+
+### 近距离通信场景调整（2026-11-02）
+
+按用户要求先缩短距离排查 OPEN 无 ACK：仅修改 `three_robot_optical_comm.scn` 中三台机器人的位置，保留深度、朝向、固定状态、灯带布局和功率配置。Leader 到 Follower 的中心距离由约 2.28 米缩短到约 1.03 米。场景已配置每台机器人自己的 RGB 相机（640×480、15 Hz、水平视场 70°），通过模板分别发布 `/leader/rgb/image_color`、`/follower_1/rgb/image_color`、`/follower_2/rgb/image_color`；相机声明存在不代表目标机器上实际有图像，需要用 `rostopic hz /follower_1/rgb/image_color` 或 rqt_image_view 验证。
+
+关闭旧仿真与 Leader 演示脚本，重新启动 `roslaunch optical_comm three_robot_comm.launch`，然后先用 `--peers 2` 测试。缩短距离有助于增加灯珠在画面中的像素数量，但不能证明无 ACK 的原因已经解决；若仍重试，继续按上节检查 Follower 的观察和事件以及相机中的遮挡。
