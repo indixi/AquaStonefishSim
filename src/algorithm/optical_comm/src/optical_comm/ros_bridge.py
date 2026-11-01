@@ -152,6 +152,9 @@ class OpticalCommNode:
                        "state":self.protocol.state,"peer_id":self.protocol.peer_id,"session":self.protocol.session,
                        "tx_busy":self.tx.busy,"vision_ready":self.vision.ready,
                        "appearance_supported":self.led.capabilities,"rx_errors":self.rx.errors,
+                       "rx_phase":"RECEIVING_FRAME" if self.rx.body_start is not None else "SEARCHING_SYNC",
+                       "rx_pending_sync":len(self.rx.candidates),"rx_last_error":self.rx.last_error,
+                       "vision_min_pixels":self.vision.min_pixels,"vision_high_thresholds":self.vision.high_thresholds,
                        "operation_wait_bound":self.operation_wait_bound}
                 self.status.publish(self.String(data=json.dumps(state)))
                 self._last_status=now

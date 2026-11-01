@@ -14,7 +14,8 @@ class Observation:
 class ColorBrightnessClassifier:
     def __init__(self,background_frames=8,min_pixels=8,minimum_change=15,
                  minimum_value=40,high_threshold=170,threshold_margin=8,
-                 color_ratio=1.3,minimum_saturation=.35,dominance=.7):
+                 color_ratio=1.3,minimum_saturation=.35,dominance=.7,
+                 blue_high_threshold=None,green_high_threshold=None):
         if type(background_frames) is not int or type(min_pixels) is not int:
             raise ValueError("image sample counts must be integers")
         if background_frames<1 or min_pixels<1 or not 0<dominance<=1:
@@ -25,6 +26,11 @@ class ColorBrightnessClassifier:
             raise ValueError("invalid color thresholds")
         values=(minimum_change,minimum_value,high_threshold,threshold_margin,color_ratio,minimum_saturation,dominance)
         if any(not math.isfinite(v) for v in values):raise ValueError("non-finite vision setting")
+        thresholds={"BLUE":high_threshold if blue_high_threshold is None else blue_high_threshold,
+                    "GREEN":high_threshold if green_high_threshold is None else green_high_threshold}
+        if any(not math.isfinite(v) or not minimum_value<v<=255 for v in thresholds.values()):
+            raise ValueError("invalid per-color brightness threshold")
+        self.high_thresholds=thresholds
         self.background_frames=background_frames;self.min_pixels=min_pixels
         self.minimum_change=minimum_change;self.minimum_value=minimum_value
         self.high_threshold=high_threshold;self.threshold_margin=threshold_margin
@@ -67,8 +73,9 @@ class ColorBrightnessClassifier:
             return Observation("UNKNOWN",0,0,nb,ng)
         mask=blue if nb>ng else green
         feature=float(np.median(maximum[mask]))
-        if abs(feature-self.high_threshold)<=self.threshold_margin:
-            return Observation("UNKNOWN",0,feature,nb,ng)
         color="BLUE" if nb>ng else "GREEN"
-        level="HIGH" if feature>self.high_threshold else "LOW"
+        threshold=self.high_thresholds[color]
+        if abs(feature-threshold)<=self.threshold_margin:
+            return Observation("UNKNOWN",0,feature,nb,ng)
+        level="HIGH" if feature>threshold else "LOW"
         return Observation(color+"_"+level,fraction,feature,nb,ng)

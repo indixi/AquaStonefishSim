@@ -1,10 +1,13 @@
 vision:
   background_frames: 8
-  min_pixels: 8
+  # 640x480 near-range demo: idle residual ~2660; weakest observed signal >14000.
+  min_pixels: 6000
   minimum_change: 15
   minimum_value: 40
-  # Provisional tuning for observed blue V=99..115; verify OFF and all four states.
+  # Scene-specific provisional levels; blue and green are not equally bright.
   high_threshold: 107
+  blue_high_threshold: 107
+  green_high_threshold: 80
   threshold_margin: 3
   color_ratio: 1.3
   minimum_saturation: 0.35

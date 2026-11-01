@@ -31,4 +31,19 @@ class VisionTest(unittest.TestCase):
         sample=background.copy();sample[4:10,4:10]=(95,22,2)
         self.assertEqual(detector.classify(sample).symbol,"BLUE_LOW")
 
+    def test_color_specific_threshold_leaves_other_color_on_legacy_fallback(self):
+        detector=ColorBrightnessClassifier(background_frames=1,min_pixels=4,green_high_threshold=80)
+        background=np.full((20,20,3),10,dtype=np.uint8)
+        detector.classify(background)
+        for pixel,want in (((124,25,5),"BLUE_LOW"),((10,92,5),"GREEN_HIGH"),((5,65,2),"GREEN_LOW")):
+            sample=background.copy();sample[4:10,4:10]=pixel
+            self.assertEqual(detector.classify(sample).symbol,want)
+
+    def test_invalid_color_thresholds_are_rejected(self):
+        for name in ("blue_high_threshold","green_high_threshold"):
+            for value in (float("nan"),float("inf"),0,40,256):
+                with self.subTest(name=name,value=value):
+                    with self.assertRaises(ValueError):
+                        ColorBrightnessClassifier(**{name:value})
+
 if __name__=="__main__":unittest.main()

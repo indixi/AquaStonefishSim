@@ -132,7 +132,7 @@ Leader                         被寻址的 Follower
 
 视觉用 NumPy，对 RGB 通道的背景变化取绝对值，因此较暗彩灯替代较亮的灭灯网格时也能识别；无需 OpenCV 目标检测：启动后先灭灯等待 3 秒，再采集 8 帧静态背景，按蓝/绿通道优势、亮度变化和像素数量判断。它只是本地灭灯背景估计，不改变预定码表，也不在握手里发送颜色标定。图像不确定时输出 UNKNOWN，不硬猜 bit。
 
-发射亮度默认高=1.0、低=0.05，蓝绿 RGB 见 symbols.yaml。接收阈值是相机图像像素值，不等于发射功率：vision.yaml 的 high_threshold 当前调试值为 107（2026-11-02 按目标机蓝光观测 99～115 调整，初始值 170），附近保留 UNKNOWN 区间，真实窗口运行时需观察亮度诊断后调整。HDR、曝光和水体条件下默认阈值尚未在本地 Windows 图形环境验证。
+发射亮度默认高=1.0、低=0.05，蓝绿 RGB 见 symbols.yaml。接收阈值是相机图像像素值，不等于发射功率：vision.yaml 当前使用 min_pixels=6000 排除近距离场景中的背景彩色残留；blue_high_threshold=107、green_high_threshold=80，threshold_margin=3，分别在分界附近保留 UNKNOWN 区间。high_threshold=107 仅作未设置分色阈值时的回退值，真实窗口运行时需观察亮度诊断后调整。HDR、曝光和水体条件下默认阈值尚未在本地 Windows 图形环境验证。
 
 ## 三机器人场景
 
@@ -239,8 +239,8 @@ rostopic echo -n 1 /leader/lights/left/cmd/appearance_supported
 ```
 
 - ready=false：先检查引擎能力、相机话题、启动等待和背景采集；缺少外观接口时不会降级为不可靠的通信。
-- observation 一直 OFF：检查是否能从对应 RGB 图像看到前部灯珠、minimum_change 和 min_pixels。
-- 高低档都变成 HIGH：查看 brightness 诊断，调整发射低档功率和接收 high_threshold，不能把发射 brightness 数字直接当成像素阈值。
+- observation 一直 OFF：检查是否能从对应 RGB 图像看到左右灯带、minimum_change 和 min_pixels。
+- 高低档都变成 HIGH：查看 brightness 诊断，调整发射低档功率和接收 blue_high_threshold/green_high_threshold，不能把发射 brightness 数字直接当成像素阈值。
 - UNKNOWN 多：检查蓝绿竞争、阈值边界或每周期有效相机帧数；T 太短时增加周期。
 - RX_REJECTED：查看置信度、调度迟到、CRC 或同步窗口信息；不会把失败帧交给上层。
 - 当前时间适配是每机本地 monotonic 到帧时间。仿真暂停、相机停流或长时间卡顿会使等待超时，第一版不保证暂停后续传，恢复后按状态重新建立会话。
@@ -333,7 +333,7 @@ rostopic echo /leader/optical_comm/observation
 
 1. Follower 的 ready 应为 true。灯光后端能力不支持、相机未采集背景等都会阻止正常应答。
 2. Leader 发同步头时，Follower 的 observation 应出现 BLUE_HIGH 与 OFF 交替。一直 OFF 时先检查相机视野、机体遮挡和有效彩色像素数量；不要先盲目缩短超时或改变协议。
-3. 发数据时，应能分别识别 BLUE_HIGH、BLUE_LOW、GREEN_HIGH、GREEN_LOW。若高低档都成 HIGH 或低档成 OFF，结合 brightness 数值调发送功率比例与 vision.yaml 的 high_threshold；固定阈值 170 尚未经本机真实渲染标定。
+3. 发数据时，应能分别识别 BLUE_HIGH、BLUE_LOW、GREEN_HIGH、GREEN_LOW。若高低档都成 HIGH 或低档成 OFF，结合 brightness 数值调发送功率比例与 vision.yaml 的 high_threshold；当前分色阈值仍需结合已知灯光状态确认。
 4. Follower 出现 SESSION_OPENED、随后 FRAME_SENT/ACK，说明已识别正向 OPEN；此时 Leader 仍重试，应检查 Leader 相机的反向 ACK 识别。
 5. Follower 出现 RX_REJECTED 时，查看 detail；unreliable symbol window 表示符号采样不足或不稳定，CRC 错误则表示解码后的帧校验失败。也可用 `rostopic hz /follower_1/rgb/image_color` 检查相机实际帧率：T=0.4 秒的中央采样窗口只有 0.24 秒，需要至少两帧，标称 15 Hz 不等于实际始终达到 15 Hz。
 
@@ -349,7 +349,7 @@ rostopic echo /leader/optical_comm/observation
 
 目标机报告 Follower 相机约 15 Hz，能够看到闪烁；observation 的蓝光 brightness 约 99～100 和 113～115，却全部为 BLUE_LOW。初始分界 high_threshold=170、threshold_margin=8 会将这些观测全部判为 LOW。接收器要求同步头为 BLUE_HIGH/OFF 三次交替，因此这些观测无法组成有效同步头。
 
-本次仅将 `config/vision.yaml` 中的 high_threshold 调至 107、threshold_margin 调至 3，作为当前演示场景的临时调试值。brightness 在 [104,110] 内输出 UNKNOWN，大于 110 输出 HIGH，小于 104 输出 LOW（仍须先满足颜色、像素数等条件）。两个数值是按当前蓝光观测间隔选择，不代表已经完成标定：99～100 是否来自低档、灭灯是否还被误识别为蓝色、绿色高低档是否可分、Leader 的反向 ACK 接收都尚待实际画面验证。该阈值当前同时用于蓝色和绿色，不能保证绿色也适合；纯 Python 分类器未传配置时仍保留原始 fallback 170/8。
+本次仅将 `config/vision.yaml` 中的 high_threshold 调至 107、threshold_margin 调至 3，作为当前演示场景的临时调试值。brightness 在 [104,110] 内输出 UNKNOWN，大于 110 输出 HIGH，小于 104 输出 LOW（仍须先满足颜色、像素数等条件）。两个数值是按当前蓝光观测间隔选择，不代表已经完成标定：99～100 是否来自低档、灭灯是否还被误识别为蓝色、绿色高低档是否可分、Leader 的反向 ACK 接收都尚待实际画面验证。该阶段的单一阈值同时用于蓝色和绿色，不能保证绿色也适合；后续“灭灯背景误判与分色阈值”调整已替代这一设置；纯 Python 分类器未传配置时仍保留原始 fallback 170/8。
 
 配置只在节点构造时读取，必须停止旧仿真和演示脚本并重启 `three_robot_comm.launch`。仅 rosparam set 不会更新已经运行的分类器。先测试 peers=2，观察同步头是否能识别为 BLUE_HIGH/OFF，以及数据阶段四种符号和事件；若仍不成功，记录已知高亮、低亮、灭灯时的 observation 再调整，避免仅凭这两簇数值反复加亮。
 
@@ -363,3 +363,46 @@ rostopic echo /follower_1/optical_comm/event
 ```
 
 如果工程使用 install 空间，加载对应 install/setup.bash。仍找不到消息类型时，在真实工作空间根目录运行 `catkin build optical_comm` 并重新 source；无需优先清理整个工作空间。observation 是 std_msgs/String，ROS 已自带该类型，因此能 echo observation 并不证明自定义 CommEvent 在该终端可用。
+
+### 灭灯背景误判与分色阈值（2026-11-02）
+
+#### 证据与原因
+
+用户在停止发送并确认灯带持续熄灭后，Follower 仍稳定输出 BLUE_LOW：brightness=100，blue_pixels 约 2660，green_pixels=12。旧配置 min_pixels=8，仅凭 8 个发生变化的彩色像素即可判为灯光，因此这些背景残留足以被误判成数据。固定背景与后续画面不一致已得到该记录支持；自动曝光可能参与了这种变化，但仅凭像素统计不能确认具体成因。
+
+同时，用户提供的发送观测中蓝色两簇亮度约为 86～87、123～127，绿色两簇约为 65～67、88～94；原先统一的 107 阈值无法将两簇绿色分开。发送片段没有标注实际高低档，绿色分界仍是根据观测簇选择的候选值，不能视为已完成实机标定。
+
+同步头要求 BLUE_HIGH/OFF 交替。若 OFF 被识别为 BLUE_LOW，接收器不会建立同步，也就无法解出 OPEN 或回复 ACK。同步尚未建立时可以没有任何协议事件；event 为空不等于相机没有画面。
+
+#### 修改文件与当前配置
+
+- `src/algorithm/optical_comm/config/vision.yaml`：当前 640×480、约 1 米距离的演示场景使用 min_pixels=6000。它高于灭灯残留约 2660，又低于记录中最弱彩色信号约 14500；这是当前场景的像素数量门限，不是通用灯带检测算法。背景区域仍参与统计，但不再仅靠少量残留触发彩色符号。
+- 同一配置新增 blue_high_threshold=107、green_high_threshold=80；threshold_margin=3。蓝色不确定区间为 [104,110]，绿色为 [77,83]。只有满足颜色、像素数、优势比例等前置条件的观测才按这些分界判高低。
+- `src/algorithm/optical_comm/src/optical_comm/vision/color_brightness.py`：支持两个可选分色阈值，省略时继续使用 high_threshold；检查阈值必须有限且在有效范围内。保留已有接口的默认行为，未加载演示 YAML 的纯 Python 使用者不会自动启用 6000 像素门限。
+- `src/algorithm/optical_comm/src/optical_comm/ros_bridge.py`：state 新增 rx_phase、rx_pending_sync、rx_last_error、vision_min_pixels、vision_high_thresholds。SEARCHING_SYNC 表示寻找同步头，RECEIVING_FRAME 表示已进入帧体采样。暂停发送时显示 SEARCHING_SYNC 属正常状态；rx_last_error 可能保留此前一次错误。
+- `test/test_scene_vision.py`：新增灭灯残留、蓝绿分档和 15 Hz 图像到 OPEN 帧恢复的回归测试；`test/test_vision.py` 补充分色参数回退与非法参数检查。
+- 协议帧、握手、灯带坐标、发光功率和 Stonefish 引擎源码不变。
+
+#### 验证与使用
+
+先构造带有 2660 个蓝色背景残留像素的合成图像以及上述两簇亮度与像素数量的发光图像，旧版本三个回归用例均失败：灭灯判为 BLUE_LOW、绿色高档判为 GREEN_LOW、OPEN 无法恢复。修改后这三个用例通过。这些合成图像覆盖的是已报告统计条件，不等同于重现真实渲染图像，也不证明两簇观测一定对应真实高低档。
+
+同步修改后停止旧仿真与上层演示，重新启动 launch，让接收器重新采集灭灯背景。无需改动或重装 Stonefish。配置与 Python 代码必须来自同一次更新，旧分类器无法接收新增的分色参数；使用 install 空间时需重新构建安装资源。
+
+```bash
+roslaunch optical_comm three_robot_comm.launch
+rostopic echo -n 1 /follower_1/optical_comm/state
+rostopic echo /follower_1/optical_comm/observation
+```
+
+先确认 state 中 ready=true、vision_min_pixels=6000、vision_high_thresholds 为 BLUE:107/GREEN:80，空闲时 observation 应为 OFF（blue_pixels 仍可能显示约 2660，这是保留的原始统计，不代表又判成蓝灯）。再另开终端：
+
+```bash
+rosrun optical_comm communication_demo.py --role leader --vehicle leader --peers 2 --payload 00011011
+```
+
+验证同步头的 BLUE_HIGH/OFF、四种数据符号，以及 Follower 的 SESSION_OPENED/FRAME_SENT ACK。若仍失败，保留 state、observation 和 event 的输出；尤其是短暂灭灯时残留是否超过 6000，及反向 ACK 在 Leader 相机中的信号面积是否低于门限。更改距离、分辨率、视野或水体条件后，需重新测量门限，不能盲目沿用本场景的 6000。
+
+注意仅 Ctrl+C 停止 communication_demo 并不会中止通信组件的当前发送与重试。需要确切静默时，可停止 Leader 组件；之后要重启完整 launch 再测试。
+
+本轮本地验证：`python -B -m pytest -q -p no:cacheprovider src/algorithm/optical_comm/test src/aquaflow_stonefish/test` 共 39 项通过；27 个 Python 文件通过 Python 3.8 语法解析，YAML 与 Git diff 格式检查通过。目标 Linux 上实际同步、ACK 和完整会话仍待验证。
