@@ -132,7 +132,7 @@ Leader                         被寻址的 Follower
 
 视觉用 NumPy，对 RGB 通道的背景变化取绝对值，因此较暗彩灯替代较亮的灭灯网格时也能识别；无需 OpenCV 目标检测：启动后先灭灯等待 3 秒，再采集 8 帧静态背景，按蓝/绿通道优势、亮度变化和像素数量判断。它只是本地灭灯背景估计，不改变预定码表，也不在握手里发送颜色标定。图像不确定时输出 UNKNOWN，不硬猜 bit。
 
-发射亮度默认高=1.0、低=0.05，蓝绿 RGB 见 symbols.yaml。接收阈值是相机图像像素值，不等于发射功率：vision.yaml 的 high_threshold 默认 170，附近保留 UNKNOWN 区间，真实窗口运行时需观察亮度诊断后调整。HDR、曝光和水体条件下默认阈值尚未在本地 Windows 图形环境验证。
+发射亮度默认高=1.0、低=0.05，蓝绿 RGB 见 symbols.yaml。接收阈值是相机图像像素值，不等于发射功率：vision.yaml 的 high_threshold 当前调试值为 107（2026-11-02 按目标机蓝光观测 99～115 调整，初始值 170），附近保留 UNKNOWN 区间，真实窗口运行时需观察亮度诊断后调整。HDR、曝光和水体条件下默认阈值尚未在本地 Windows 图形环境验证。
 
 ## 三机器人场景
 
@@ -344,3 +344,22 @@ rostopic echo /leader/optical_comm/observation
 按用户要求先缩短距离排查 OPEN 无 ACK：仅修改 `three_robot_optical_comm.scn` 中三台机器人的位置，保留深度、朝向、固定状态、灯带布局和功率配置。Leader 到 Follower 的中心距离由约 2.28 米缩短到约 1.03 米。场景已配置每台机器人自己的 RGB 相机（640×480、15 Hz、水平视场 70°），通过模板分别发布 `/leader/rgb/image_color`、`/follower_1/rgb/image_color`、`/follower_2/rgb/image_color`；相机声明存在不代表目标机器上实际有图像，需要用 `rostopic hz /follower_1/rgb/image_color` 或 rqt_image_view 验证。
 
 关闭旧仿真与 Leader 演示脚本，重新启动 `roslaunch optical_comm three_robot_comm.launch`，然后先用 `--peers 2` 测试。缩短距离有助于增加灯珠在画面中的像素数量，但不能证明无 ACK 的原因已经解决；若仍重试，继续按上节检查 Follower 的观察和事件以及相机中的遮挡。
+
+### 蓝光同步头亮度阈值调整（2026-11-02）
+
+目标机报告 Follower 相机约 15 Hz，能够看到闪烁；observation 的蓝光 brightness 约 99～100 和 113～115，却全部为 BLUE_LOW。初始分界 high_threshold=170、threshold_margin=8 会将这些观测全部判为 LOW。接收器要求同步头为 BLUE_HIGH/OFF 三次交替，因此这些观测无法组成有效同步头。
+
+本次仅将 `config/vision.yaml` 中的 high_threshold 调至 107、threshold_margin 调至 3，作为当前演示场景的临时调试值。brightness 在 [104,110] 内输出 UNKNOWN，大于 110 输出 HIGH，小于 104 输出 LOW（仍须先满足颜色、像素数等条件）。两个数值是按当前蓝光观测间隔选择，不代表已经完成标定：99～100 是否来自低档、灭灯是否还被误识别为蓝色、绿色高低档是否可分、Leader 的反向 ACK 接收都尚待实际画面验证。该阈值当前同时用于蓝色和绿色，不能保证绿色也适合；纯 Python 分类器未传配置时仍保留原始 fallback 170/8。
+
+配置只在节点构造时读取，必须停止旧仿真和演示脚本并重启 `three_robot_comm.launch`。仅 rosparam set 不会更新已经运行的分类器。先测试 peers=2，观察同步头是否能识别为 BLUE_HIGH/OFF，以及数据阶段四种符号和事件；若仍不成功，记录已知高亮、低亮、灭灯时的 observation 再调整，避免仅凭这两簇数值反复加亮。
+
+另一个终端的 `Cannot load message class for [optical_comm/CommEvent]` 是消息类型在当前终端中不可用，不是 ACK 已经收到或没有发出的证据。先加载 ROS Noetic 与实际构建工作空间（不是凭仓库名推断的路径）：
+
+```bash
+source /opt/ros/noetic/setup.bash
+source /你的catkin工作空间/devel/setup.bash
+rosmsg show optical_comm/CommEvent
+rostopic echo /follower_1/optical_comm/event
+```
+
+如果工程使用 install 空间，加载对应 install/setup.bash。仍找不到消息类型时，在真实工作空间根目录运行 `catkin build optical_comm` 并重新 source；无需优先清理整个工作空间。observation 是 std_msgs/String，ROS 已自带该类型，因此能 echo observation 并不证明自定义 CommEvent 在该终端可用。
