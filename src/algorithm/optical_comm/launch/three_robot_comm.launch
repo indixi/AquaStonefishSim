@@ -2,6 +2,9 @@
 <launch>
   <arg name="graphics_quality" default="medium"/>
   <arg name="graphics_resolution" default="1200 800"/>
+  <!-- Per-lamp SCN power ceiling; data symbols retain their configured fractions. -->
+  <arg name="led_illuminance" default="500.0"/>
+  <param name="/optical_comm/led_illuminance" type="double" value="$(arg led_illuminance)"/>
   <arg name="start_demo_providers" default="true"/>
   <include file="$(find stonefish_ros)/launch/simulator.launch">
     <arg name="simulation_data" value="$(find aquaflow_stonefish)/model"/>

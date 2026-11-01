@@ -138,7 +138,7 @@ Leader                         被寻址的 Follower
 
 - leader：(-1.2,0,1.5)，面向 +X；follower_1、follower_2：(1,-0.6,1.5)、(1,0.6,1.5)，面向 -X。
 - 模板 fixed=true，不启动运动控制。仅保留本轮需要的 RGB 和灯带，复用现有网格。
-- 通信专用八灯放在前部 x=0.225、z=-0.08、左右 y=±0.05～±0.17，避开原网格前界 x≈0.194 的遮挡；原跟踪场景灯珠位置不改。
+- 通信场景的八颗灯珠与单机器人 `bricsbot_reference.scn` 使用相同坐标：x=-0.12、-0.04、0.04、0.12，左右 y=±0.02，z=-0.04，半径 0.012。2026-11-02 按用户要求恢复左右两排布局，取消此前机头前方的布局。是否被机体遮挡，必须从接收机器人的 RGB 图像确认。
 - 三台共 24 个原生点光源，各自独立名称与外观名称，避免重复注册。
 - 每机 RGB 为 /<vehicle_name>/rgb/image_color；LED 为 /<vehicle_name>/lights/{left,right}/cmd。
 ## 构建与运行
@@ -292,3 +292,49 @@ Python、YAML、XML/launch 及场景资源解析检查通过。Windows 本地没
 - 默认波形时长计算：ACK 等待下限 14.6 秒、READ 等待预算 96.2 秒；单个示例会话波形合计 133.6 秒，不含转向和处理。
 - 独立审查的三项重要问题及补充回归已完成修复，未留下需要忽略的重要问题；Git diff 格式检查通过。
 - 未提交或推送。本地检查不替代目标 Linux、RGB 渲染和人工画面验收。
+
+### 灯带布局与 OPEN 超时排查（2026-11-02）
+
+本次仅调整通信演示的场景与启动配置，不改原单机器人跟踪场景、不改协议或 Stonefish 源码。
+
+- `bricsbot_optical_reference.scn`：恢复原单机器人左右两排灯珠的坐标；功率上限由 include 参数 `led_illuminance` 传入。
+- `three_robot_optical_comm.scn`：为三台机器人传入同一个功率上限，读取 ROS 参数 `/optical_comm/led_illuminance`。
+- `three_robot_comm.launch`：新增启动参数 `led_illuminance`，默认 500.0，原默认为 100.0。灯珠半径与三台机器人的位姿不变。
+- `symbols.yaml` 的亮度比例保持高档 1.0、低档 0.05，因此每颗灯在默认配置下，高档功率上限为 500，低档为 25，均为原来的 5 倍。这是引擎输入功率的比例，不代表图像像素亮度也线性增加 5 倍。
+
+重新启动仿真后生效；本次没有 C++ 或消息定义变化，源码工作空间中通常不需要重新编译，使用 install 空间时需要更新对应安装资源。
+
+```bash
+roslaunch optical_comm three_robot_comm.launch led_illuminance:=500.0
+```
+
+可以调小以避免高低档都过曝；也可以用更高值测试外观，但必须重新检查四种符号的接收结果。功率不能补偿灯珠被外壳遮挡的问题。恢复原左右两排布局是外观要求，不代表已经验证这些位置适合当前面对面的相机通信。
+
+#### FRAME_SENT 后出现 RETRY 的含义
+
+`FRAME_SENT ... OPEN` 表示 Leader 本地完成了 OPEN 波形调度，不证明相机看到了正确灯光。`RETRY ... OPEN` 表示在当前 ACK 等待期限内没有收到有效确认。两条日志不足以确定是正向 OPEN 未识别，还是反向 ACK 未识别，不能据此认定只是亮度不够或等待时间太短。
+
+先只与机器人 2 测试，启动后先确认三台节点 ready，再执行：
+
+```bash
+rosrun optical_comm communication_demo.py --role leader --vehicle leader --peers 2 --payload 00011011
+```
+
+在不同终端观察：
+
+```bash
+rostopic echo /follower_1/optical_comm/state
+rostopic echo /follower_1/optical_comm/observation
+rostopic echo /follower_1/optical_comm/event
+rostopic echo /leader/optical_comm/observation
+```
+
+用 `rqt_image_view` 选择 `/follower_1/rgb/image_color` 看实际接收画面；主仿真窗口看到灯亮，不代表这个相机也能看到。检查顺序如下：
+
+1. Follower 的 ready 应为 true。灯光后端能力不支持、相机未采集背景等都会阻止正常应答。
+2. Leader 发同步头时，Follower 的 observation 应出现 BLUE_HIGH 与 OFF 交替。一直 OFF 时先检查相机视野、机体遮挡和有效彩色像素数量；不要先盲目缩短超时或改变协议。
+3. 发数据时，应能分别识别 BLUE_HIGH、BLUE_LOW、GREEN_HIGH、GREEN_LOW。若高低档都成 HIGH 或低档成 OFF，结合 brightness 数值调发送功率比例与 vision.yaml 的 high_threshold；固定阈值 170 尚未经本机真实渲染标定。
+4. Follower 出现 SESSION_OPENED、随后 FRAME_SENT/ACK，说明已识别正向 OPEN；此时 Leader 仍重试，应检查 Leader 相机的反向 ACK 识别。
+5. Follower 出现 RX_REJECTED 时，查看 detail；unreliable symbol window 表示符号采样不足或不稳定，CRC 错误则表示解码后的帧校验失败。也可用 `rostopic hz /follower_1/rgb/image_color` 检查相机实际帧率：T=0.4 秒的中央采样窗口只有 0.24 秒，需要至少两帧，标称 15 Hz 不等于实际始终达到 15 Hz。
+
+本地只能检查配置、资源和软件测试；OPEN 超时是否解除，仍需目标 Linux 机器人的 RGB 图像与上述事件验证。

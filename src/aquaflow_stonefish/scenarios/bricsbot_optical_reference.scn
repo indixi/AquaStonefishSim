@@ -23,59 +23,60 @@
         <compound_transform xyz="0 0 0" rpy="0 0 0" />
       </external_part>
     </base_link>
+    <!-- Match tracking-model strip positions; power is supplied by the demo launch. -->
     <light name="led_left_1">
-      <specs radius="0.012" illuminance="100.0" />
+      <specs radius="0.012" illuminance="$(arg led_illuminance)" />
       <color rgb="0.02 0.25 1.0" />
-      <origin xyz="0.225 -0.050 -0.08" rpy="0 0 0" />
+      <origin xyz="-0.12 -0.02 -0.04" rpy="0 0 0"/>
       <link name="base_link" />
       <ros_subscriber command="/$(arg vehicle_name)/lights/left/cmd" />
     </light>
     <light name="led_left_2">
-      <specs radius="0.012" illuminance="100.0" />
+      <specs radius="0.012" illuminance="$(arg led_illuminance)" />
       <color rgb="0.02 0.25 1.0" />
-      <origin xyz="0.225 -0.090 -0.08" rpy="0 0 0" />
+      <origin xyz="-0.04 -0.02 -0.04" rpy="0 0 0"/>
       <link name="base_link" />
       <ros_subscriber command="/$(arg vehicle_name)/lights/left/cmd" />
     </light>
     <light name="led_left_3">
-      <specs radius="0.012" illuminance="100.0" />
+      <specs radius="0.012" illuminance="$(arg led_illuminance)" />
       <color rgb="0.02 0.25 1.0" />
-      <origin xyz="0.225 -0.130 -0.08" rpy="0 0 0" />
+      <origin xyz="0.04 -0.02 -0.04" rpy="0 0 0"/>
       <link name="base_link" />
       <ros_subscriber command="/$(arg vehicle_name)/lights/left/cmd" />
     </light>
     <light name="led_left_4">
-      <specs radius="0.012" illuminance="100.0" />
+      <specs radius="0.012" illuminance="$(arg led_illuminance)" />
       <color rgb="0.02 0.25 1.0" />
-      <origin xyz="0.225 -0.170 -0.08" rpy="0 0 0" />
+      <origin xyz="0.12 -0.02 -0.04" rpy="0 0 0"/>
       <link name="base_link" />
       <ros_subscriber command="/$(arg vehicle_name)/lights/left/cmd" />
     </light>
     <light name="led_right_1">
-      <specs radius="0.012" illuminance="100.0" />
+      <specs radius="0.012" illuminance="$(arg led_illuminance)" />
       <color rgb="0.02 0.25 1.0" />
-      <origin xyz="0.225 0.050 -0.08" rpy="0 0 0" />
+      <origin xyz="-0.12 0.02 -0.04" rpy="0 0 0"/>
       <link name="base_link" />
       <ros_subscriber command="/$(arg vehicle_name)/lights/right/cmd" />
     </light>
     <light name="led_right_2">
-      <specs radius="0.012" illuminance="100.0" />
+      <specs radius="0.012" illuminance="$(arg led_illuminance)" />
       <color rgb="0.02 0.25 1.0" />
-      <origin xyz="0.225 0.090 -0.08" rpy="0 0 0" />
+      <origin xyz="-0.04 0.02 -0.04" rpy="0 0 0"/>
       <link name="base_link" />
       <ros_subscriber command="/$(arg vehicle_name)/lights/right/cmd" />
     </light>
     <light name="led_right_3">
-      <specs radius="0.012" illuminance="100.0" />
+      <specs radius="0.012" illuminance="$(arg led_illuminance)" />
       <color rgb="0.02 0.25 1.0" />
-      <origin xyz="0.225 0.130 -0.08" rpy="0 0 0" />
+      <origin xyz="0.04 0.02 -0.04" rpy="0 0 0"/>
       <link name="base_link" />
       <ros_subscriber command="/$(arg vehicle_name)/lights/right/cmd" />
     </light>
     <light name="led_right_4">
-      <specs radius="0.012" illuminance="100.0" />
+      <specs radius="0.012" illuminance="$(arg led_illuminance)" />
       <color rgb="0.02 0.25 1.0" />
-      <origin xyz="0.225 0.170 -0.08" rpy="0 0 0" />
+      <origin xyz="0.12 0.02 -0.04" rpy="0 0 0"/>
       <link name="base_link" />
       <ros_subscriber command="/$(arg vehicle_name)/lights/right/cmd" />
     </light>
